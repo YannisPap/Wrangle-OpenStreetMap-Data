@@ -17,7 +17,7 @@ The data wrangling takes place programmatically, using **Python** for the most o
 ## The Dataset
 
 The dataset describes the center of Singapore, covering an area from Clementi on the west, to Bedok on the east and from Serangoon on the north, to Sentosa Island on the south.
-The size of the dataset is 96 MB and can can be downloaded from [here](http://overpass-api.de/api/map?bbox=103.7651,1.2369,103.9310,1.3539)
+The size of the dataset is 96 MB and can can be downloaded from [here](http://overpass-api.de/api/map?bbox=103.7651,1.2369,103.9310,1.3539).
 
 # Data Assessment
 
