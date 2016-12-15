@@ -79,7 +79,7 @@ Although most of the Singaporean street names end with the street type (e.g., "S
 It would be easy to populate the list of Common Street Types with some profound values like Street or Avenue, but guessing does not take into account any local peculiarity. Instead, I searched the dataset for all the different types and used the 12 with the most occurrences (From 13th position, abbreviations start to appear).
 
 |   |Street Type|Occurrences|    |Street Type|Occurrences|    |Street Type|Occurrences|
-| - |-----------|-----------| -- |-----------|-----------| -- |-----------|-----------|
+|---|-----------|-----------|----|-----------|-----------|----|-----------|-----------|
 | 1 |'Road'     | 574       | 6  |'Geylang'  | 42        | 11 |'Link'     | 34        |
 | 2 |'Avenue'   | 145       | 7  |'Crescent' | 42        | 12 |'Terrace'  | 30        |
 | 3 |'Street'   | 139       | 8  |'Walk'     | 40        | 13 |'Ave'      | 29        |
