@@ -1,0 +1,5 @@
+Link to the map: http://overpass-api.de/api/map?bbox=103.7651,1.2369,103.9310,1.3539
+
+I used the map of Singapore for the project. It is mostly the center of the country, but it expands to a wide area around it.
+I selected this map because I used to live there until last September.
+My first choice was Greece (my home country), but the different language would add an extra layer of difficulty on the Project.
