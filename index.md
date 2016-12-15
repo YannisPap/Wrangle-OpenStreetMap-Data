@@ -7,7 +7,7 @@
 
 # Wrangle-OpenStreetMap-Data
 
-![Singapore](images/singapore.jpg)
+![Singapore](Resources/singapore.jpg)
 
 ## Introduction
 
@@ -563,15 +563,15 @@ ORDER BY "Temples" DESC;
 There are two areas where the current project can be improved in the future.
 The first one is on the completeness of the data. All the above analysis is based on a dataset that reflects a big part of Singapore but not the whole country. The reason for this is the lack of a way to download a dataset for the entire Singapore without including parts of the neighboring countries. The analyst has to either select a part of the island/country or select a wider area that includes parts of Malaysia and Indonesia. Also, because of relations between nodes, ways, and relations, the downloaded data expand much further than the actual selection. Below you can see a plotting of the coordinates of the nodes of a dataset from a tight selection of Singapore. You can notice that huge parts of nearby countries were selected.
 
-![initial selection](../Resources/initial_selection.png)
+![initial selection](Resources/initial_selection.png)
 
 As a future improvement, I would download a wider selection or the metro extract from [MapZen](https://mapzen.com/data/metro-extracts/metro/singapore/) and filter the non-Singaporean nodes and their references. The initial filtering could take place by introducing some latitude/longitude limits in the code to sort out most of the "non-SG" nodes.
 
-![filter to square](../Resources/filter_to_square.png)
+![filter to square](Resources/filter_to_square.png)
 
 Then, I would download a shapefile for Singapore (e.g. http://www.diva-gis.org/gdata), use a GIS library like [Fiona](https://pypi.python.org/pypi/Fiona) to create a polygon and finally with a geometric library like [Shapely](https://github.com/Toblerity/Shapely) and compare all the nodes' coordinate against this polygon. Finally, I would clean all the ways and relations from the "non-sg" nodes and remove these that become childless to conclude with a dataset of all (and only) Singapore.
 
-![After GIS](../Resources/after_gis.png)
+![After GIS](Resources/after_gis.png)
 
 The drawback of the above technic is that the comparison of each node against the polygon is a very time-consuming procedure with my initial tests taking 17-18 hours to produce a result. This is the reason the above approach left as a future improvement probably along with the use of multithreading technics to speed up the process.
 
