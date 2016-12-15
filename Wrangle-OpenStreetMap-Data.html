@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8" />
-<title>Wrangle-OpenStreetMap-Data (report)</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<head><style type="text/css">
+div.output_subarea {
+	max-width: 100% !important;
+}
+</style>
+<meta charset="utf-8" />
+<title>Wrangle-OpenStreetMap-Data(report)</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -12385,7 +12390,7 @@ Finally, whatever could not be resolved with one of the above ways I used web se
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="prompt input_prompt"></div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">size_in_bytes</span> <span class="o">=</span> <span class="o">%</span><span class="k">sql</span> SELECT pg_database_size(&#39;Project_3&#39;);
@@ -12401,11 +12406,11 @@ Finally, whatever could not be resolved with one of the above ways I used web se
 
 
 <div class="output_area"><div class="prompt"></div>
+
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>DB size: 96 MB
 </pre>
-</div>
-</div>
+</div></div>
 
 </div>
 </div>
@@ -12423,7 +12428,7 @@ Finally, whatever could not be resolved with one of the above ways I used web se
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="prompt input_prompt"></div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
@@ -12440,8 +12445,7 @@ FROM (SELECT uid FROM nodes
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[24]:</div>
-
+<div class="output_area"><div class="prompt"></div>
 <div class="output_html rendered_html output_subarea output_execute_result">
 <table>
     <tr>
@@ -12452,7 +12456,6 @@ FROM (SELECT uid FROM nodes
     </tr>
 </table>
 </div>
-
 </div>
 
 </div>
@@ -12471,7 +12474,7 @@ FROM (SELECT uid FROM nodes
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt"></div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">n_nodes</span> <span class="o">=</span> <span class="o">%</span><span class="k">sql</span> SELECT COUNT(*) FROM nodes
@@ -12490,12 +12493,12 @@ FROM (SELECT uid FROM nodes
 
 
 <div class="output_area"><div class="prompt"></div>
+
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Number of &#39;nodes: 409350
 Number of &#39;ways: 66404
 </pre>
-</div>
-</div>
+</div></div>
 
 </div>
 </div>
@@ -12532,7 +12535,7 @@ Number of &#39;ways: 66404
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="prompt input_prompt"></div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
@@ -12553,8 +12556,7 @@ LIMIT 10
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[23]:</div>
-
+<div class="output_area"><div class="prompt"></div>
 <div class="output_html rendered_html output_subarea output_execute_result">
 <table>
     <tr>
@@ -12603,7 +12605,6 @@ LIMIT 10
     </tr>
 </table>
 </div>
-
 </div>
 
 </div>
@@ -12621,7 +12622,7 @@ LIMIT 10
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt"></div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
@@ -12643,8 +12644,7 @@ LIMIT 10
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[8]:</div>
-
+<div class="output_area"><div class="prompt"></div>
 <div class="output_html rendered_html output_subarea output_execute_result">
 <table>
     <tr>
@@ -12693,7 +12693,6 @@ LIMIT 10
     </tr>
 </table>
 </div>
-
 </div>
 
 </div>
@@ -12721,7 +12720,7 @@ LIMIT 10
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="prompt input_prompt"></div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
@@ -12742,8 +12741,7 @@ ORDER BY &quot;Temples&quot; DESC;
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[25]:</div>
-
+<div class="output_area"><div class="prompt"></div>
 <div class="output_html rendered_html output_subarea output_execute_result">
 <table>
     <tr>
@@ -12780,7 +12778,6 @@ ORDER BY &quot;Temples&quot; DESC;
     </tr>
 </table>
 </div>
-
 </div>
 
 </div>
