@@ -35,7 +35,7 @@ All these elements can carry tags describing the name, type of road, and other a
 
 For the particular project, I am using a custom .osm file for the center of Singapore which I exported by using the overpass API. The  dataset has a volume of 96 MB and can be downloaded from this [link](http://overpass-api.de/api/map?bbox=103.7651,1.2369,103.9310,1.3539)  
 
-___
+---
 
 ## Data Assessment
 
@@ -256,7 +256,7 @@ fix_pcodes()
 Postcodes were much more consistent than the street types with 3 problems fixed programmati-
 cally and 8 pending further inspection.
 
-___
+---
 
 ## Data assesment in the database
 
@@ -303,7 +303,7 @@ later) makes them prone to mistakes. The assessment revealed only 5 issues:
 - ‘OCBC’ referred as ‘Overseas Chinese Banking Corporation’
 - 2 completely irrelevant nodes marked as ‘ATM’
 
-___
+---
 
 ## Data Exploration
 
@@ -556,7 +556,7 @@ ORDER BY "Temples" DESC;
 
 
 
-___
+---
 
 ## Ideas for additional improvements.
 
@@ -585,7 +585,7 @@ The second area with room for future improvement is the exploratory analysis of 
 
 The scope of the current project was the wrangling of the dataset, so all the above have been left for future improvement.
 
-___
+---
 
 ## References
 
