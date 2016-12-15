@@ -1,12 +1,7 @@
 <!DOCTYPE html>
 <html>
-<head><style type="text/css">
-div.output_subarea {
-	max-width: 100% !important;
-}
-</style>
-<meta charset="utf-8" />
-<title>Wrangle-OpenStreetMap-Data(report)</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<head><meta charset="utf-8" />
+<title>Wrangle-OpenStreetMap-Data (for index)</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -11811,8 +11806,43 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>On the particular project, I am using data mungling techniques to assess the quality of OpenStreetMap's (OSM) data for the center of Singapore regarding their consistency and uniformity.
+<p>On the particular project, I am using data mungling techniques to assess the quality of OpenStreetMap’s (OSM) data for the center of Singapore regarding their consistency and uniformity.
 The data wrangling takes place programmatically, using <strong>Python</strong> for the most of the process and <strong>SQL</strong> for items that need further attention while in the <strong>PostgreSQL</strong>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The dataset describes the center of Singapore, covering an area from Clementi on the west, to
+Bedok on the east and from Serangoon on the north, to Sentosa Island on the south. The size of the dataset is 96 MB and can can be downloaded from <a href="http://overpass-api.de/api/map?bbox=103.7651,1.2369,103.9310,1.3539">here</a></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Skills-demonstrated">Skills demonstrated<a class="anchor-link" href="#Skills-demonstrated">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>Assessment of the quality of data for validity, accuracy, completeness, consistency and uniformity.</li>
+<li>Parsing and gathering data from popular file formats such as .xml and .csv.</li>
+<li>Processing data from very large files that cannot be cleaned with spreadsheet programs.</li>
+<li>Storing, querying, and aggregating data using SQL.</li>
+</ul>
 
 </div>
 </div>
@@ -11831,281 +11861,14 @@ The data wrangling takes place programmatically, using <strong>Python</strong> f
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The dataset describes the center of Singapore, covering an area from Clementi on the west, to Bedok on the east and from Serangoon on the north, to Sentosa Island on the south.
-The size of the dataset is 96 MB and can can be downloaded from <a href="http://overpass-api.de/api/map?bbox=103.7651,1.2369,103.9310,1.3539">here</a></p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Data-Assessment">Data Assessment<a class="anchor-link" href="#Data-Assessment">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>An initial exploration of the dataset revealed the following problems:</p>
+<p>OpenStreetMap's data are structured in well-formed XML documents (.osm files) that consist of the following elements:</p>
 <ul>
-<li>Abbreviations of street types like ‘Av’ instead of ‘Avenue’ and ‘Rd’ instead of ‘Road'.</li>
-<li>All lowercase letters like ‘street’ instead of ‘Street’.</li>
-<li>Postcodes including the first letter (S xxxxxx) or the whole name (Singapore xxxxxx) of the country.</li>
-<li>Postcodes omitting the leading ‘0’ probably because of declared as integers at some point before their import to OpenStreetMap.</li>
-<li>Multi-abbreviated amenity names.  </li>
+<li><strong>Nodes</strong>: "Nodes" are individual dots used to mark specific locations (such as a postal box). Two or more nodes are used to draw line segments or "ways".</li>
+<li><strong>Ways</strong>: A "way" is a line of nodes, displayed as connected line segments. "Ways" are used to create roads, paths, rivers, etc.  </li>
+<li><strong>Relations</strong>: When "ways" or areas are linked in some way but do not represent the same physical thing, a "relation" is used to describe the larger entity they are part of. "Relations" are used to create map features, such as cycling routes, turn restrictions, and areas that are not contiguous. The multiple segments of a long way, such as an interstate or a state highway are grouped into a "relation" for that highway. Another example is a national park with several locations that are separated from each other. Those are also grouped into a "relation".</li>
 </ul>
-<p>The problems in the amenity names were to a small extent, and they were corrected directly in the database, the rest resolved programmatically using Python on the biggest part and a subtle portion of them needed further assessment, resolven in the database.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Auditing-Street-Types">Auditing Street Types<a class="anchor-link" href="#Auditing-Street-Types">&#182;</a></h2>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>To audit the Street Types I need to extract the Street Names from the XML. The Street Names appear in two forms in the dataset:
-In Node and Way elements, in the form of: "<em>&lt; tag k="addr:street" v="<strong>street_name</strong>"/&gt;</em>"</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">node</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;337171253&quot;</span> <span class="n">lat</span><span class="o">=</span><span class="s2">&quot;1.3028023&quot;</span> <span class="n">lon</span><span class="o">=</span><span class="s2">&quot;103.8599300&quot;</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;3&quot;</span> 
-<span class="n">timestamp</span><span class="o">=</span><span class="s2">&quot;2015-08-01T01:38:25Z&quot;</span> <span class="n">changeset</span><span class="o">=</span><span class="s2">&quot;33022579&quot;</span> <span class="n">uid</span><span class="o">=</span><span class="s2">&quot;741163&quot;</span>
-<span class="n">user</span><span class="o">=</span><span class="s2">&quot;JaLooNz&quot;</span><span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;addr:city&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;Singapore&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;addr:country&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;SG&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;addr:housenumber&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;85&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;addr:postcode&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;198501&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;addr:street&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;Sultan Gate&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;fax&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;+65 6299 4316&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;name&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;Malay Heritage Centre&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;phone&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;+65 6391 0450&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;tourism&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;museum&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;website&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;http://malayheritage.org.sg/&quot;</span><span class="o">/&gt;</span>
-  <span class="o">&lt;/</span><span class="n">node</span><span class="o">&gt;</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>In some <em>Way</em> elements that have the "&lt; tag k="highway" ..../&gt;", and the '<em>v</em>' attribute is one of ['living_street', 'motorway', 'primary', 'residential', 'secondary', 'tertiary'], as "&lt; tag k="name" v="<strong>street_name</strong>"/&gt;</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">way</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;4386520&quot;</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;23&quot;</span> <span class="n">timestamp</span><span class="o">=</span><span class="s2">&quot;2016-11-07T12:03:39Z&quot;</span>
-<span class="n">changeset</span><span class="o">=</span><span class="s2">&quot;43462870&quot;</span> <span class="n">uid</span><span class="o">=</span><span class="s2">&quot;2818856&quot;</span> <span class="n">user</span><span class="o">=</span><span class="s2">&quot;CitymapperHQ&quot;</span><span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;26778964&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;247749632&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;1275309736&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;1275309696&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;462263980&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;473019059&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;4486796339&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;1278204303&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;3689717007&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;246494174&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;highway&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;name&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;Orchard Road&quot;</span><span class="o">/&gt;</span>
-    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;oneway&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;yes&quot;</span><span class="o">/&gt;</span>
-  <span class="o">&lt;/</span><span class="n">way</span><span class="o">&gt;</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Although most of the Singaporean street names end with the street type (e.g., "Serangoon Road" or "Arab Street") it is also common to end with a number instead (e.g. "Bedok North Avenue 1"). Thus, by using regular expressions, I extracted the last word that does not contain numbers from the street name.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>It would be easy to populate the list of Common Street Types with some profound values like Street or Avenue, but guessing does not take into account any local peculiarity. Instead, I searched the dataset for all the different types and used the 12 with the most occurrences (From 13th position, abbreviations start to appear).</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<table>
-<thead><tr>
-<th></th>
-<th>Street Type</th>
-<th>Occurrences</th>
-<th></th>
-<th>Street Type</th>
-<th>Occurrences</th>
-<th></th>
-<th>Street Type</th>
-<th>Occurrences</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>'Road'</td>
-<td>574</td>
-<td>6</td>
-<td>'Geylang'</td>
-<td>42</td>
-<td>11</td>
-<td>'Link'</td>
-<td>34</td>
-</tr>
-<tr>
-<td>2</td>
-<td>'Avenue'</td>
-<td>145</td>
-<td>7</td>
-<td>'Crescent'</td>
-<td>42</td>
-<td>12</td>
-<td>'Terrace'</td>
-<td>30</td>
-</tr>
-<tr>
-<td>3</td>
-<td>'Street'</td>
-<td>139</td>
-<td>8</td>
-<td>'Walk'</td>
-<td>40</td>
-<td>13</td>
-<td>'Ave'</td>
-<td>29</td>
-</tr>
-<tr>
-<td>4</td>
-<td>'Drive'</td>
-<td>87</td>
-<td>9</td>
-<td>'Park'</td>
-<td>39</td>
-<td>14</td>
-<td>'Hill'</td>
-<td>25</td>
-</tr>
-<tr>
-<td>5</td>
-<td>'Lane'</td>
-<td>80</td>
-<td>10</td>
-<td>'Close'</td>
-<td>37</td>
-<td>15</td>
-<td>'Flyover'</td>
-<td>23</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>To find the street names that need correction, I used the "get_close_matches()" function from the <a href="https://docs.python.org/2/library/difflib.html?highlight=get_close_matches">"difflib"</a> module to find “close matches” of the 12 Common Street Types. This is what I found:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<div class="highlight"><pre><span></span><span class="n">Road</span> <span class="p">[</span><span class="s1">&#39;Road&#39;</span><span class="p">,</span> <span class="s1">&#39;road&#39;</span><span class="p">,</span> <span class="s1">&#39;Rd&#39;</span><span class="p">,</span> <span class="s1">&#39;Ria&#39;</span><span class="p">]</span>  
-<span class="n">Avenue</span> <span class="p">[</span><span class="s1">&#39;Avenue&#39;</span><span class="p">,</span> <span class="s1">&#39;Aenue&#39;</span><span class="p">,</span> <span class="s1">&#39;Avebue&#39;</span><span class="p">,</span> <span class="s1">&#39;Ave&#39;</span><span class="p">]</span>  
-<span class="n">Street</span> <span class="p">[</span><span class="s1">&#39;Street&#39;</span><span class="p">,</span> <span class="s1">&#39;street&#39;</span><span class="p">,</span> <span class="s1">&#39;See&#39;</span><span class="p">,</span> <span class="s1">&#39;Stangee&#39;</span><span class="p">]</span>  
-<span class="n">Drive</span> <span class="p">[</span><span class="s1">&#39;Drive&#39;</span><span class="p">,</span> <span class="s1">&#39;Grove&#39;</span><span class="p">,</span> <span class="s1">&#39;Grisek&#39;</span><span class="p">,</span> <span class="s1">&#39;Bridge&#39;</span><span class="p">]</span>  
-<span class="n">Lane</span> <span class="p">[</span><span class="s1">&#39;Lane&#39;</span><span class="p">,</span> <span class="s1">&#39;Lana&#39;</span><span class="p">,</span> <span class="s1">&#39;Lateh&#39;</span><span class="p">,</span> <span class="s1">&#39;Layang&#39;</span><span class="p">]</span>  
-<span class="n">Geylang</span> <span class="p">[</span><span class="s1">&#39;Geylang&#39;</span><span class="p">,</span> <span class="s1">&#39;Pelangi&#39;</span><span class="p">,</span> <span class="s1">&#39;Selangat&#39;</span><span class="p">,</span> <span class="s1">&#39;Selanting&#39;</span><span class="p">]</span>  
-<span class="n">Crescent</span> <span class="p">[</span><span class="s1">&#39;Crescent&#39;</span><span class="p">,</span> <span class="s1">&#39;Cresent&#39;</span><span class="p">,</span> <span class="s1">&#39;Cres&#39;</span><span class="p">,</span> <span class="s1">&#39;Green&#39;</span><span class="p">]</span>  
-<span class="n">Walk</span> <span class="p">[</span><span class="s1">&#39;Walk&#39;</span><span class="p">,</span> <span class="s1">&#39;walk&#39;</span><span class="p">,</span> <span class="s1">&#39;Wajek&#39;</span><span class="p">,</span> <span class="s1">&#39;Wakaff&#39;</span><span class="p">]</span>  
-<span class="n">Park</span> <span class="p">[</span><span class="s1">&#39;Park&#39;</span><span class="p">,</span> <span class="s1">&#39;park&#39;</span><span class="p">,</span> <span class="s1">&#39;Parkway&#39;</span><span class="p">,</span> <span class="s1">&#39;Paras&#39;</span><span class="p">]</span>  
-<span class="n">Close</span> <span class="p">[</span><span class="s1">&#39;Close&#39;</span><span class="p">,</span> <span class="s1">&#39;Cross&#39;</span><span class="p">,</span> <span class="s1">&#39;Circle&#39;</span><span class="p">,</span> <span class="s1">&#39;Flyover&#39;</span><span class="p">]</span>  
-<span class="n">Link</span> <span class="p">[</span><span class="s1">&#39;Link&#39;</span><span class="p">,</span> <span class="s1">&#39;link&#39;</span><span class="p">,</span> <span class="s1">&#39;Minyak&#39;</span><span class="p">,</span> <span class="s1">&#39;Bingka&#39;</span><span class="p">]</span>  
-<span class="n">Terrace</span> <span class="p">[</span><span class="s1">&#39;Terrace&#39;</span><span class="p">,</span> <span class="s1">&#39;Terrance&#39;</span><span class="p">,</span> <span class="s1">&#39;Ter&#39;</span><span class="p">,</span> <span class="s1">&#39;service&#39;</span><span class="p">]</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>The Python code was able to correct 998 problems both in addresses where the Street Type was at the end of the address<br>
-<code>Greenwood Ave ==&gt; Greenwood Avenue (2 occurrences)</code><br>
-and wher it was not:<br>
-<code>Eunos Ave 7A ==&gt; Eunos Avenue 7A</code></p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Auditing-Postcodes">Auditing Postcodes<a class="anchor-link" href="#Auditing-Postcodes">&#182;</a></h2>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Postcodes in Singapore consist of 6 digits with the first two, denoting the Postal Sector and taking values between 01 and 80, excluding 74 (<a href="https://www.ura.gov.sg/realEstateIIWeb/resources/misc/list_of_postal_districts.htm">link</a>).<br>
-I searched the dataset for this pattern, correcting whatever could be addressed automatically and added the rest to the "PROBLEMATICS" for further examination.<br>
-Postcodes were much more consistent than the street types with 3 problems fixed programmatically and 8 pending further inspection.</p>
+<p>All these elements can carry tags describing the name, type of road, and other attributes.</p>
+<p>For the particular project, I am using a custom .osm file for the center of Singapore which I exported by using the overpass API. The  dataset has a volume of 96 MB and can be downloaded from this <a href="http://overpass-api.de/api/map?bbox=103.7651,1.2369,103.9310,1.3539">link</a></p>
 
 </div>
 </div>
@@ -12125,7 +11888,7 @@ Postcodes were much more consistent than the street types with 3 problems fixed 
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Assessment-in-the-Database">Assessment in the Database<a class="anchor-link" href="#Assessment-in-the-Database">&#182;</a></h1>
+<h2 id="Data-Assessment">Data Assessment<a class="anchor-link" href="#Data-Assessment">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -12134,7 +11897,18 @@ Postcodes were much more consistent than the street types with 3 problems fixed 
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>After performing the most of the cleaning with Python, I stored the dataset in a database to explore it and examine further the PROBLEMATIC elements.</p>
+<p>An initial exploration of the dataset revealed the following problems:</p>
+<ul>
+<li>Abbreviations of street types like ‘Av’ instead of ‘Avenue’ and ‘Rd’ instead of ‘Road’.</li>
+<li>All lowercase letters like ‘street’ instead of ‘Street’.</li>
+<li>Postcodes including the first letter (S xxxxxx) or the whole name (Singapore xxxxxx) of the
+country.</li>
+<li>Postcodes omitting the leading ‘0’ (probably because of declared as integers at some point
+before their import to OpenStreetMap.)</li>
+<li>Multi-abbreviated amenity names.</li>
+</ul>
+<p>The problems in the amenity names were to a small extent, and they were corrected directly in
+the database, the rest resolved programmatically using Python on the biggest part and a subtle portion of them needed further assessment, resolven in the database.</p>
 
 </div>
 </div>
@@ -12144,7 +11918,18 @@ Postcodes were much more consistent than the street types with 3 problems fixed 
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>As a database I used PostgreSQL to present a generic solution although a lightweight database like SQLite might be a more appropriate choice for the size of the dataset.</p>
+<h3 id="Auditing-Street-Types">Auditing Street Types<a class="anchor-link" href="#Auditing-Street-Types">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To audit the street names I should extract them from the XML.<br>
+The street names appear in two forms in the dataset:<br>
+In <em>Node</em> and <em>Way</em> elements, in the form of: "<em>&lt; tag k="addr:street" v="<strong>street_name</strong>"/&gt;</em>"</p>
 
 </div>
 </div>
@@ -12154,16 +11939,19 @@ Postcodes were much more consistent than the street types with 3 problems fixed 
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Addresses">Addresses<a class="anchor-link" href="#Addresses">&#182;</a></h2>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>And for the rest of them I had to search in Google/Google Maps for finding addresses from amenity names.</p>
+<div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">node</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;337171253&quot;</span> <span class="n">lat</span><span class="o">=</span><span class="s2">&quot;1.3028023&quot;</span> <span class="n">lon</span><span class="o">=</span><span class="s2">&quot;103.8599300&quot;</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;3&quot;</span> <span class="n">timestamp</span><span class="o">=</span><span class="s2">&quot;2015-08-01T01:38:25Z&quot;</span> <span class="n">changeset</span><span class="o">=</span><span class="s2">&quot;33022579&quot;</span> <span class="n">uid</span><span class="o">=</span><span class="s2">&quot;741163&quot;</span> <span class="n">user</span><span class="o">=</span><span class="s2">&quot;JaLooNz&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;addr:city&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;Singapore&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;addr:country&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;SG&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;addr:housenumber&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;85&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;addr:postcode&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;198501&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;addr:street&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;Sultan Gate&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;fax&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;+65 6299 4316&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;name&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;Malay Heritage Centre&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;phone&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;+65 6391 0450&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;tourism&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;museum&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;website&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;http://malayheritage.org.sg/&quot;</span><span class="o">/&gt;</span>
+<span class="o">&lt;/</span><span class="n">node</span><span class="o">&gt;</span>
+</pre></div>
 
 </div>
 </div>
@@ -12173,20 +11961,385 @@ Postcodes were much more consistent than the street types with 3 problems fixed 
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The small number of the elements that were requiring further attention (13) allow me to examine them one by one. There were three categories of problems.<br>
+<p>In <em>Way</em> elements that have the "<em>&lt; tag k="highway" ..../&gt;</em>", and the '<em>v</em>' attribute is one of ['living_street', 'motorway', 'primary', 'residential', 'secondary', 'tertiary'], as "<em>&lt; tag k="name" v="<strong>street_name</strong>"/&gt;</em>".</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">way</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;4386520&quot;</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;23&quot;</span> <span class="n">timestamp</span><span class="o">=</span><span class="s2">&quot;2016-11-07T12:03:39Z&quot;</span> <span class="n">changeset</span><span class="o">=</span><span class="s2">&quot;43462870&quot;</span> <span class="n">uid</span><span class="o">=</span><span class="s2">&quot;2818856&quot;</span> <span class="n">user</span><span class="o">=</span><span class="s2">&quot;CitymapperHQ&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;26778964&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;247749632&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;1275309736&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;1275309696&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;462263980&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;473019059&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;4486796339&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;1278204303&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;3689717007&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;246494174&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;highway&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;name&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;Orchard Road&quot;</span><span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;oneway&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;yes&quot;</span><span class="o">/&gt;</span>
+<span class="o">&lt;/</span><span class="n">way</span><span class="o">&gt;</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Although most of the Singaporean street names end with the street type (e.g., “Serangoon Road” or “Arab Street”) it is also common to end with a number instead (e.g. “Bedok North Avenue 1”).<br>
+Thus, by using regular expressions, I am extracting the last word that does not contain numbers from the street name.</p>
+<p>It would be easy to populate the list of Common Street Types with some profound values like Street or Avenue, but guessing does not take into account any local peculiarity. Instead, I searched the dataset for all the different types and used the 12 with the most occurrences (From 13th position, abbreviations start to appear).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">street_types</span> <span class="o">=</span> <span class="n">sort_street_types</span><span class="p">(</span><span class="n">streets</span><span class="p">)</span>
+<span class="c1">#print a samle of the list</span>
+<span class="n">street_types</span><span class="p">[:</span><span class="mi">15</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[14]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[(&#39;Road&#39;, 574),
+ (&#39;Avenue&#39;, 145),
+ (&#39;Street&#39;, 139),
+ (&#39;Drive&#39;, 87),
+ (&#39;Lane&#39;, 80),
+ (&#39;Geylang&#39;, 42),
+ (&#39;Crescent&#39;, 42),
+ (&#39;Walk&#39;, 40),
+ (&#39;Park&#39;, 39),
+ (&#39;Close&#39;, 37),
+ (&#39;Link&#39;, 34),
+ (&#39;Terrace&#39;, 30),
+ (&#39;Ave&#39;, 29),
+ (&#39;Hill&#39;, 25),
+ (&#39;Flyover&#39;, 23)]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To find the street names that need correction, I used the “<em>get_close_matches()</em>” function from the <a href="https://docs.python.org/2/library/difflib.html?highlight=get_close_matches">difflib</a> module to find “close matches” of the 12 Common Street Types. This is what I found:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">find_abbreviations</span><span class="p">(</span><span class="n">EXPECTED</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">streets</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Road [&#39;Road&#39;, &#39;road&#39;, &#39;Rd&#39;, &#39;Ria&#39;]
+Avenue [&#39;Avenue&#39;, &#39;Aenue&#39;, &#39;Avebue&#39;, &#39;Ave&#39;]
+Street [&#39;Street&#39;, &#39;street&#39;, &#39;See&#39;, &#39;Stangee&#39;]
+Drive [&#39;Drive&#39;, &#39;Grove&#39;, &#39;Grisek&#39;, &#39;Bridge&#39;]
+Lane [&#39;Lane&#39;, &#39;Lana&#39;, &#39;Lateh&#39;, &#39;Layang&#39;]
+Geylang [&#39;Geylang&#39;, &#39;Pelangi&#39;, &#39;Selangat&#39;, &#39;Selanting&#39;]
+Crescent [&#39;Crescent&#39;, &#39;Cresent&#39;, &#39;Cres&#39;, &#39;Green&#39;]
+Walk [&#39;Walk&#39;, &#39;walk&#39;, &#39;Wajek&#39;, &#39;Wakaff&#39;]
+Park [&#39;Park&#39;, &#39;park&#39;, &#39;Parkway&#39;, &#39;Paras&#39;]
+Close [&#39;Close&#39;, &#39;Cross&#39;, &#39;Circle&#39;, &#39;Flyover&#39;]
+Link [&#39;Link&#39;, &#39;link&#39;, &#39;Minyak&#39;, &#39;Bingka&#39;]
+Terrace [&#39;Terrace&#39;, &#39;Terrance&#39;, &#39;Ter&#39;, &#39;service&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, I can map the different variations to the one it meant to be and correct all the different abbreviations of street types.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;road&#39;</span><span class="p">:</span> <span class="s1">&#39;Road&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Rd&#39;</span><span class="p">:</span> <span class="s1">&#39;Road&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;street&#39;</span><span class="p">:</span> <span class="s1">&#39;Street&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Ave&#39;</span><span class="p">:</span> <span class="s1">&#39;Avenue&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Avebue&#39;</span><span class="p">:</span> <span class="s1">&#39;Avenue&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Aenue&#39;</span><span class="p">:</span> <span class="s1">&#39;Avenue&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;park&#39;</span><span class="p">:</span> <span class="s1">&#39;Park&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;walk&#39;</span><span class="p">:</span> <span class="s1">&#39;Walk&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;Link&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Cresent&#39;</span><span class="p">:</span> <span class="s1">&#39;Crescent&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Terrance&#39;</span><span class="p">:</span> <span class="s1">&#39;Terrace&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Ter&#39;</span><span class="p">:</span> <span class="s1">&#39;Terrace&#39;</span>
+<span class="p">}</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The code was able to correct 998 problems.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">update_street_type</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Greenwood Ave ==&gt; Greenwood Avenue (2 occurrences)
+Smith street ==&gt; Smith Street
+Eunos Ave 7A ==&gt; Eunos Avenue 7A
+Arumugam Rd ==&gt; Arumugam Road (3 occurrences)
+Yarwood Ave ==&gt; Yarwood Avenue (2 occurrences)
+Eunos Ave 6 ==&gt; Eunos Avenue 6
+Eunos Ave 5 ==&gt; Eunos Avenue 5
+Holland Grove Ter ==&gt; Holland Grove Terrace
+Roseburn Ave ==&gt; Roseburn Avenue
+Read Cresent ==&gt; Read Crescent
+Sophia Rd ==&gt; Sophia Road
+Bedok North road ==&gt; Bedok North Road (4 occurrences)
+Nanson road ==&gt; Nanson Road
+Chee Hoon Ave ==&gt; Chee Hoon Avenue (2 occurrences)
+secondary_link ==&gt; secondary_Link (66 occurrences)
+Serangoon Aenue 1 ==&gt; Serangoon Avenue 1
+Hua Guan Ave ==&gt; Hua Guan Avenue (3 occurrences)
+Elite Park Ave ==&gt; Elite Park Avenue
+Malcolm Rd ==&gt; Malcolm Road
+Eng Neo Ave ==&gt; Eng Neo Avenue (2 occurrences)
+Bukit Timah Rd ==&gt; Bukit Timah Road (2 occurrences)
+primary_link ==&gt; primary_Link (246 occurrences)
+Stockport Rd ==&gt; Stockport Road
+Greenmead Ave ==&gt; Greenmead Avenue
+Ross Ave ==&gt; Ross Avenue
+motorway_link ==&gt; motorway_Link (442 occurrences)
+Tai Keng Ave ==&gt; Tai Keng Avenue
+Upper Wilkie Rd ==&gt; Upper Wilkie Road
+Bukit Batok East Ave 6 ==&gt; Bukit Batok East Avenue 6 (2 occurrences)
+Clementi Ave 2 ==&gt; Clementi Avenue 2 (3 occurrences)
+Clementi Ave 1 ==&gt; Clementi Avenue 1
+First Hospital Ave ==&gt; First Hospital Avenue
+Wareham Rd ==&gt; Wareham Road
+Orchard Rd ==&gt; Orchard Road
+31 Lower Kent Ridge Rd ==&gt; 31 Lower Kent Ridge Road
+road ==&gt; Road (8 occurrences)
+Towner Rd ==&gt; Towner Road
+Greenleaf Ave ==&gt; Greenleaf Avenue
+1013 Geylang East Ave 3 ==&gt; 1013 Geylang East Avenue 3
+Lakme Terrance ==&gt; Lakme Terrace
+Ubi Ave 1 ==&gt; Ubi Avenue 1
+Daisy Ave ==&gt; Daisy Avenue
+Bayfront Avebue ==&gt; Bayfront Avenue
+tertiary_link ==&gt; tertiary_Link (31 occurrences)
+Eunos Ave 5A ==&gt; Eunos Avenue 5A
+Commonwealth Cresent ==&gt; Commonwealth Crescent
+Pine walk ==&gt; Pine Walk
+Elite Terrance ==&gt; Elite Terrace
+Sian Tuan Ave ==&gt; Sian Tuan Avenue
+Raeburn park ==&gt; Raeburn Park
+trunk_link ==&gt; trunk_Link (122 occurrences)
+Wilmonar Ave ==&gt; Wilmonar Avenue
+Tai Thong Cresent ==&gt; Tai Thong Crescent
+Parkstone Rd ==&gt; Parkstone Road
+Kent Ridge Cresent ==&gt; Kent Ridge Crescent (9 occurrences)
+Vanda Ave ==&gt; Vanda Avenue
+Gloucester road ==&gt; Gloucester Road (5 occurrences)
+Tanjong Pagar Rd ==&gt; Tanjong Pagar Road
+Hougang Ave 3 ==&gt; Hougang Avenue 3
+Hougang Ave 1 ==&gt; Hougang Avenue 1
+Chempaka Ave ==&gt; Chempaka Avenue
+Greendale Ave ==&gt; Greendale Avenue
+998 street names were fixed
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Auditing-Postcodes">Auditing Postcodes<a class="anchor-link" href="#Auditing-Postcodes">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Postcodes in Singapore consist of 6 digits with the first two, denoting the Postal Sector, take values between 01 and  80, excluding 74 (<a href="https://www.ura.gov.sg/realEstateIIWeb/resources/misc/list_of_postal_districts.htm">Urban Redevelopment Authority of Singapore</a>).<br>
+I am searching the dataset for this pattern, correcting whatever can be addressed automatically and adding the rest to the "<em>PROBLEMATICS</em>" for further examination.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">fix_pcodes</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Singapore 408564 ==&gt; 408564
+S118556 ==&gt; 118556
+S 278989 ==&gt; 278989
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Postcodes were much more consistent than the street types with 3 problems fixed programmati-
+cally and 8 pending further inspection.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<hr>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Data-assesment-in-the-database">Data assesment in the database<a class="anchor-link" href="#Data-assesment-in-the-database">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>After performing the most of the cleaning with Python, I stored the dataset in a database to explore it and examine further the PROBLEMATIC elements.
+As a database I used PostgreSQL to present a generic solution although a lightweight database like SQLite might be a more appropriate choice for the size of the dataset.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Addresses">Addresses<a class="anchor-link" href="#Addresses">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The small number of the elements that were requiring further attention (13) allowed me to examine them one by one. There were three categories of problems.<br>
 In the first category belong elements that some values have been placed to wrong attributes (e.g. housenumber in the place of postcode. These problems resolved just by checking the attributes and update the relevant tables with the righ keys/values relation.<br>
 Incomplete addresses with no self-explained errors belong to the second category. For these elements I defined a function that uses Google Maps API to resolve the full address from a partial address. This was helpful for the addresses with missing postcodes.<br>
-Finally, whatever could not be resolved with one of the above ways I used web search with any information available.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>You may find the changes that took place during this phase in the following table.</p>
+Finally, whatever could not be resolved with one of the above ways I used web search with any information available.<br>
+You may find the changes that took place during this phase in the following table.</p>
 
 </div>
 </div>
@@ -12330,7 +12483,7 @@ Finally, whatever could not be resolved with one of the above ways I used web se
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Amenities">Amenities<a class="anchor-link" href="#Amenities">&#182;</a></h2>
+<h3 id="Amenities">Amenities<a class="anchor-link" href="#Amenities">&#182;</a></h3>
 </div>
 </div>
 </div>
@@ -12339,12 +12492,14 @@ Finally, whatever could not be resolved with one of the above ways I used web se
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>In Singapore they refer to the banks with their abbreviations rather than their complete names. This fact along with their popularity of the ATMs on the street amenities list (will be presented later) makes them prone to mistakes. The assessment revealed only 5 issues:</p>
+<p>In Singapore they refer to the banks with their abbreviations rather than their complete names.
+This fact along with their popularity of the ATMs on the street amenities list (will be presented
+later) makes them prone to mistakes. The assessment revealed only 5 issues:</p>
 <ul>
-<li>‘UOB’ referred as ‘Uob’  </li>
-<li>‘POSB’ referred as ‘Posb’  </li>
-<li>‘OCBC’ referred as 'Overseas Chinese Banking Corporation'  </li>
-<li>2 completely irrelevant nodes marked as ‘ATM’  </li>
+<li>‘UOB’ referred as ‘Uob’</li>
+<li>‘POSB’ referred as ‘Posb’</li>
+<li>‘OCBC’ referred as ‘Overseas Chinese Banking Corporation’</li>
+<li>2 completely irrelevant nodes marked as ‘ATM’</li>
 </ul>
 
 </div>
@@ -12365,7 +12520,7 @@ Finally, whatever could not be resolved with one of the above ways I used web se
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Data-Exploration">Data Exploration<a class="anchor-link" href="#Data-Exploration">&#182;</a></h1>
+<h2 id="Data-Exploration">Data Exploration<a class="anchor-link" href="#Data-Exploration">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -12374,7 +12529,7 @@ Finally, whatever could not be resolved with one of the above ways I used web se
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Dataset-Specific">Dataset Specific<a class="anchor-link" href="#Dataset-Specific">&#182;</a></h2>
+<h3 id="Dataset-Specific">Dataset Specific<a class="anchor-link" href="#Dataset-Specific">&#182;</a></h3>
 </div>
 </div>
 </div>
@@ -12383,14 +12538,13 @@ Finally, whatever could not be resolved with one of the above ways I used web se
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><strong>Size of the database</strong></p>
-
+<h4 id="Size-of-the-database">Size of the database<a class="anchor-link" href="#Size-of-the-database">&#182;</a></h4>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt"></div>
+<div class="prompt input_prompt">In&nbsp;[65]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">size_in_bytes</span> <span class="o">=</span> <span class="o">%</span><span class="k">sql</span> SELECT pg_database_size(&#39;Project_3&#39;);
@@ -12406,11 +12560,11 @@ Finally, whatever could not be resolved with one of the above ways I used web se
 
 
 <div class="output_area"><div class="prompt"></div>
-
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>DB size: 96 MB
 </pre>
-</div></div>
+</div>
+</div>
 
 </div>
 </div>
@@ -12421,20 +12575,20 @@ Finally, whatever could not be resolved with one of the above ways I used web se
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><strong>Number of Unique Users</strong></p>
-
+<h4 id="Number-of-Unique-Users">Number of Unique Users<a class="anchor-link" href="#Number-of-Unique-Users">&#182;</a></h4>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt"></div>
+<div class="prompt input_prompt">In&nbsp;[66]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
 SELECT count(DISTINCT(uid)) AS &quot;Unique Users&quot;
-FROM (SELECT uid FROM nodes
-      UNION SELECT uid FROM ways) AS elements
+FROM (SELECT uid FROM nodes 
+      UNION 
+      SELECT uid FROM ways) AS elements;
 </pre></div>
 
 </div>
@@ -12445,17 +12599,19 @@ FROM (SELECT uid FROM nodes
 <div class="output">
 
 
-<div class="output_area"><div class="prompt"></div>
+<div class="output_area"><div class="prompt output_prompt">Out[66]:</div>
+
 <div class="output_html rendered_html output_subarea output_execute_result">
 <table>
     <tr>
         <th>Unique Users</th>
     </tr>
     <tr>
-        <td>847</td>
+        <td>848</td>
     </tr>
 </table>
 </div>
+
 </div>
 
 </div>
@@ -12467,14 +12623,13 @@ FROM (SELECT uid FROM nodes
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><strong>Number of <em>Nodes</em> and <em>Ways</em></strong></p>
-
+<h4 id="Number-of-Nodes-and-Ways">Number of Nodes and Ways<a class="anchor-link" href="#Number-of-Nodes-and-Ways">&#182;</a></h4>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt"></div>
+<div class="prompt input_prompt">In&nbsp;[68]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">n_nodes</span> <span class="o">=</span> <span class="o">%</span><span class="k">sql</span> SELECT COUNT(*) FROM nodes
@@ -12493,12 +12648,12 @@ FROM (SELECT uid FROM nodes
 
 
 <div class="output_area"><div class="prompt"></div>
-
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Number of &#39;nodes: 409350
+<pre>Number of &#39;nodes: 409352
 Number of &#39;ways: 66404
 </pre>
-</div></div>
+</div>
+</div>
 
 </div>
 </div>
@@ -12509,7 +12664,7 @@ Number of &#39;ways: 66404
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Area-Specific">Area Specific<a class="anchor-link" href="#Area-Specific">&#182;</a></h2>
+<h3 id="Area-Specific">Area Specific<a class="anchor-link" href="#Area-Specific">&#182;</a></h3>
 </div>
 </div>
 </div>
@@ -12518,8 +12673,7 @@ Number of &#39;ways: 66404
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><strong>Most frequent amenities</strong></p>
-
+<h4 id="Most-frequent-amenities">Most frequent amenities<a class="anchor-link" href="#Most-frequent-amenities">&#182;</a></h4>
 </div>
 </div>
 </div>
@@ -12528,20 +12682,23 @@ Number of &#39;ways: 66404
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>No surprises here, Singaporeans love food! Restaurant are the first amenity with nearly 3 times more occurrences from the second amenity.</p>
+<p>Anyone who has lived in Singapore knows the love of Singaporeans for food. No surprises here; restaurants are, by far, on the top of the results.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt"></div>
+<div class="prompt input_prompt">In&nbsp;[70]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
 SELECT value AS &quot;Amenity&quot;, COUNT(value) AS &quot;Occurrences&quot;
-FROM (SELECT * FROM nodes_tags
-      UNION ALL SELECT * FROM nodes_tags) AS tags
+FROM	(SELECT *
+	FROM nodes_tags
+	UNION ALL
+	SELECT *
+	FROM nodes_tags) as tags
 WHERE key = &#39;amenity&#39;
 GROUP BY value
 ORDER BY &quot;Occurrences&quot; DESC
@@ -12556,7 +12713,8 @@ LIMIT 10
 <div class="output">
 
 
-<div class="output_area"><div class="prompt"></div>
+<div class="output_area"><div class="prompt output_prompt">Out[70]:</div>
+
 <div class="output_html rendered_html output_subarea output_execute_result">
 <table>
     <tr>
@@ -12585,7 +12743,7 @@ LIMIT 10
     </tr>
     <tr>
         <td>atm</td>
-        <td>190</td>
+        <td>194</td>
     </tr>
     <tr>
         <td>toilets</td>
@@ -12605,6 +12763,7 @@ LIMIT 10
     </tr>
 </table>
 </div>
+
 </div>
 
 </div>
@@ -12622,7 +12781,7 @@ LIMIT 10
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt"></div>
+<div class="prompt input_prompt">In&nbsp;[71]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
@@ -12644,7 +12803,8 @@ LIMIT 10
 <div class="output">
 
 
-<div class="output_area"><div class="prompt"></div>
+<div class="output_area"><div class="prompt output_prompt">Out[71]:</div>
+
 <div class="output_html rendered_html output_subarea output_execute_result">
 <table>
     <tr>
@@ -12693,6 +12853,7 @@ LIMIT 10
     </tr>
 </table>
 </div>
+
 </div>
 
 </div>
@@ -12720,7 +12881,7 @@ LIMIT 10
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt"></div>
+<div class="prompt input_prompt">In&nbsp;[76]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
@@ -12741,7 +12902,8 @@ ORDER BY &quot;Temples&quot; DESC;
 <div class="output">
 
 
-<div class="output_area"><div class="prompt"></div>
+<div class="output_area"><div class="prompt output_prompt">Out[76]:</div>
+
 <div class="output_html rendered_html output_subarea output_execute_result">
 <table>
     <tr>
@@ -12769,15 +12931,16 @@ ORDER BY &quot;Temples&quot; DESC;
         <td>6</td>
     </tr>
     <tr>
-        <td>jewish</td>
+        <td>sikh</td>
         <td>1</td>
     </tr>
     <tr>
-        <td>sikh</td>
+        <td>jewish</td>
         <td>1</td>
     </tr>
 </table>
 </div>
+
 </div>
 
 </div>
@@ -12799,7 +12962,7 @@ ORDER BY &quot;Temples&quot; DESC;
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Ideas-for-additional-improvements.">Ideas for additional improvements.<a class="anchor-link" href="#Ideas-for-additional-improvements.">&#182;</a></h1>
+<h2 id="Ideas-for-additional-improvements.">Ideas for additional improvements.<a class="anchor-link" href="#Ideas-for-additional-improvements.">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -12809,9 +12972,7 @@ ORDER BY &quot;Temples&quot; DESC;
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>There are two areas where the current project can be improved in the future.
-The first one is on the completeness of the data. All the above analysis is based on a dataset that reflects a big part of Singapore but not the whole country. The reason for this is the lack of a way to download a dataset big enough to include the entire Singapore without including parts of the neighboring countries.<br>
-As a future improvement, I would download the metro extract from <a href="https://mapzen.com/data/metro-extracts/metro/singapore/">MapZen</a> and filter the non-Singaporean nodes and their references. The filtering would involve the creation of polygons from a suitable shapefile like <a href="http://www.diva-gis.org/gdata">this one</a> with a GIS library like <a href="https://pypi.python.org/pypi/Fiona">Fiona</a> and the comparison of <em>Nodes</em>’ coordinates with these polygons with a geometric library like <a href="https://github.com/Toblerity/Shapely">Shapely</a>.<br>
-The drawback of the above technique is that the comparison of each node against the polygons is a very time-consuming procedure with my initial tests taking 17-18 hours to produce a result.</p>
+The first one is on the completeness of the data. All the above analysis is based on a dataset that reflects a big part of Singapore but not the whole country. The reason for this is the lack of a way to download a dataset for the entire Singapore without including parts of the neighboring countries. The analyst has to either select a part of the island/country or select a wider area that includes parts of Malaysia and Indonesia. Also, because of relations between nodes, ways, and relations, the downloaded data expand much further than the actual selection. Below you can see a plotting of the coordinates of the nodes of a dataset from a tight selection of Singapore. You can notice that huge parts of nearby countries were selected.</p>
 
 </div>
 </div>
@@ -12821,18 +12982,86 @@ The drawback of the above technique is that the comparison of each node against 
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The second area with room for future improvement is the exploratory analysis. Although the scope of the current project was the wrangling of the dataset, thus the exploration has been kept in a basic level, the dataset is full of information that can be extracted. Just to mention some:</p>
+<p><img src="Resources/initial_selection.png" alt="initial selection"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As a future improvement, I would download a wider selection or the metro extract from <a href="https://mapzen.com/data/metro-extracts/metro/singapore/">MapZen</a> and filter the non-Singaporean nodes and their references. The initial filtering could take place by introducing some latitude/longitude limits in the code to sort out most of the "non-SG" nodes.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="Resources/filter_to_square.png" alt="filter to square"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Then, I would download a shapefile for Singapore (e.g. <a href="http://www.diva-gis.org/gdata">http://www.diva-gis.org/gdata</a>), use a GIS library like <a href="https://pypi.python.org/pypi/Fiona">Fiona</a> to create a polygon and finally with a geometric library like <a href="https://github.com/Toblerity/Shapely">Shapely</a> and compare all the nodes' coordinate against this polygon. Finally, I would clean all the ways and relations from the "non-sg" nodes and remove these that become childless to conclude with a dataset of all (and only) Singapore.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="Resources/after_gis.png" alt="After GIS"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The drawback of the above technic is that the comparison of each node against the polygon is a very time-consuming procedure with my initial tests taking 17-18 hours to produce a result. This is the reason the above approach left as a future improvement probably along with the use of multithreading technics to speed up the process.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The second area with room for future improvement is the exploratory analysis of the dataset.  Just to mention some of the explorings that could take place:</p>
 <ul>
 <li>Distribution of commits per contributor.</li>
-<li>Plotting of element creation date, per type, per day.</li>
-<li>Popular franchises in the country (fast food, conventional stores, etc.)  </li>
-</ul>
-<p>And even more interesting such us:</p>
-<ul>
-<li>Distribution of distance between different types of amenities.</li>
+<li>Plotting of element creation per type, per day.</li>
+<li>Distribution of distance between different types of amenities</li>
+<li>Popular franchises in the country (fast food, conventional stores, etc.)</li>
 <li>Selection of a bank based on the average distance you have to walk for an ATM.</li>
-<li>Which area has the biggest parks and recreation spaces.</li>
+<li>Which area has the biggest parks and recreation spaces.  </li>
 </ul>
+<p>The scope of the current project was the wrangling of the dataset, so all the above have been left for future improvement.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<hr>
 
 </div>
 </div>
@@ -12857,7 +13086,8 @@ OpenStreetMap - <a href="https://www.openstreetmap.org">https://www.openstreetma
 Overpass API - <a href="http://overpass-api.de/">http://overpass-api.de/</a><br>
 Python Software Foundation - <a href="https://www.python.org/">https://www.python.org/</a><br>
 Urban Redevelopment Authority of Singapore - <a href="https://www.ura.gov.sg">https://www.ura.gov.sg</a><br>
-Catherine Devlin's Github repository - <a href="https://github.com/catherinedevlin/ipython-sql">https://github.com/catherinedevlin/ipython-sql</a></p>
+Catherine Devlin's Github repository - <a href="https://github.com/catherinedevlin/ipython-sql">https://github.com/catherinedevlin/ipython-sql</a><br>
+Google Map APIs - <a href="https://developers.google.com/maps/">https://developers.google.com/maps/</a></p>
 
 </div>
 </div>
