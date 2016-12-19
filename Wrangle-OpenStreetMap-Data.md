@@ -68,13 +68,13 @@ from geopy.exc import GeocoderTimedOut
 
 ```python
 #OSM downloaded from openstreetmap
-SG_OSM = 'Helper/Singapore.osm'
+SG_OSM = '../Helper/Singapore.osm'
 #The following .csv files will be used for data extraction from the XML.
-NODES_PATH = "Helper/nodes.csv"
-NODE_TAGS_PATH = "Helper/nodes_tags.csv"
-WAYS_PATH = "Helper/ways.csv"
-WAY_NODES_PATH = "Helper/ways_nodes.csv"
-WAY_TAGS_PATH = "Helper/ways_tags.csv"
+NODES_PATH = "../Helper/nodes.csv"
+NODE_TAGS_PATH = "../Helper/nodes_tags.csv"
+WAYS_PATH = "../Helper/ways.csv"
+WAY_NODES_PATH = "../Helper/ways_nodes.csv"
+WAY_TAGS_PATH = "../Helper/ways_tags.csv"
 ```
 
 
@@ -160,7 +160,15 @@ In *Way* elements that have the "*< tag k="highway" ..../>*", and the '*v*' attr
 
 ```python
 def chk_for_street(element):
-    '''Extracts adrresses from elements.'''
+    '''Extracts adrresses from elements.
+    
+    Args:
+        element (element): An element of the XML tree
+        
+    Returns:
+        str: If the element has an address it returns it as a string , otherwise it returns nothing.
+        
+    '''
     highway_types = [
         'living_street', 'motorway', 'primary', 'residential', 'secondary',
         'tertiary'
@@ -174,7 +182,7 @@ def chk_for_street(element):
                     return element.find("./tag[@k='name']")
             except AttributeError:
                 return
-    if tag is not None:
+    else:
         return tag
     return
 ```
@@ -182,7 +190,15 @@ def chk_for_street(element):
 
 ```python
 def get_street_names(tree):
-    '''Creates a dictionary {element_id:street_name} for all elements in a given tree.'''
+    '''Creates a dictionary for all elements in a given tree.
+    
+    Args:
+        tree (ElementTree): An ElementTree object for which I want to find the street names
+        
+    Returns
+        dict: A dictionary with the following stracture: {element_id:street_name}
+        
+    '''
     result = {}
     for path in ["./node", "./way"]:
         for element in tree.findall(path):
@@ -204,15 +220,15 @@ street_names = get_street_names(root)
 pprint.pprint(dict(street_names.items()[:10]))
 ```
 
-    {'172814272': 'Tanjong Pagar Road',
-     '172814274': 'Duxton Hill',
-     '172814276': 'Blair Road',
-     '172814279': 'Craig Road',
-     '312190492': 'primary_link',
-     '44352821': 'Dunman Road',
-     '44352823': 'Dunman Road',
-     '44352824': 'Dunman Lane',
-     '71231228': 'Swiss Club Avenue',
+    {'173767759': 'Lornie Road',
+     '178436854': 'Upper Weld Road',
+     '201275515': 'Jalan Novena',
+     '241208738': 'Race Course Road',
+     '241208739': 'Race Course Road',
+     '260092923': 'Jalan Novena Utara',
+     '334112229': 'Joo Chiat Road',
+     '388268000': 'Waringin Park',
+     '46818743': 'Bukit Purmei Avenue',
      '9590561': 'Merchant Road'}
 
 
@@ -231,10 +247,19 @@ I am also adding not expected street names to the "*PROBLEMATICS*" list for furt
 
 
 ```python
-def audit_st_types():
-    '''Extracts the "street type" part from an address '''
+def audit_st_types(streets):
+    '''Extracts the "street type" part from an address
+    
+    Args:
+        streets (dict): A dictionary containing street names in the form of {element_id:street_name}
+        
+    Returns:
+        dict: A dictionary of street types in the form of 
+        {street_type:(street_name_1,street_name_2,...,street_name_n)}
+    
+    '''
     result = defaultdict(set)
-    for key, value in street_names.iteritems():
+    for key, value in streets.iteritems():
         try:
             street_type = st_types_re.findall(value)[-1].strip()
         except (IndexError):  #One word or empty street names
@@ -246,24 +271,36 @@ def audit_st_types():
 
 
 ```python
-streets = audit_st_types()
+streets = audit_st_types(street_names)
 #Sample of the dictionary
-pprint.pprint(dict(streets.items()[:10]))
+pprint.pprint(dict(streets.items()[:7]))
 ```
 
-    {'Aenue': set(['Serangoon Aenue 1']),
-     'Gr': set(['Eden Gr']),
-     'Heights': set(['Hume Heights',
-                     'Leedon Heights',
-                     'Telok Blangah Heights',
-                     'Watten Heights']),
-     'Limau': set(['Jalan Kebun Limau', 'Lorong Limau']),
+    {'Fyover': set(['Ophir Fyover']),
      'Melor': set(['Jalan Melor']),
-     'Rendang': set(['Jalan Rendang']),
-     'Selangat': set(['Lorong Selangat']),
-     'Siglap': set(['Jalan Ulu Siglap', 'Lorong Siglap', 'Taman Siglap']),
-     'Tenteram': set(['Jalan Tenteram']),
-     'garden': set(['ah soo garden'])}
+     'Pelatina': set(['Jln Pelatina']),
+     'Riang': set(['Jalan Riang']),
+     'Rise': set(['Ascot Rise',
+                  'Binchang Rise',
+                  'Binjai Rise',
+                  'Cairnhill Rise',
+                  'Canning Rise',
+                  'Clover Rise',
+                  'Dover Rise',
+                  'Goldhill Rise',
+                  'Greenleaf Rise',
+                  'Holland Rise',
+                  'Matlock Rise',
+                  'Mount Sinai Rise',
+                  'Novena Rise',
+                  'Oxley Rise',
+                  'Siglap Rise',
+                  'Slim Barracks Rise',
+                  'Telok Blangah Rise',
+                  'Toa Payoh Rise',
+                  'Watten Rise']),
+     'Satu': set(['Jalan Satu', 'Lengkong Satu']),
+     'Taman': set(['Jalan Taman'])}
 
 
 It would be easy to populate the list of Common Street Types with some profound values like Street or Avenue, but guessing does not take into account any local peculiarity. Instead, I searched the dataset for all the different types and used the 12 with the most occurrences (From 13th position, abbreviations start to appear).
@@ -271,7 +308,16 @@ It would be easy to populate the list of Common Street Types with some profound 
 
 ```python
 def sort_street_types(street_types):
-    '''Counts the number of appearances of each street type and sorts them.'''
+    '''Counts the number of appearances of each street type and sorts them.
+    
+    Args:
+        street_types (dict): A dictionary of street types in the form of 
+        {street_type:(street_name_1,street_name_2,...,street_name_n)}
+        
+    Returns:
+        list: A sorted list of tupples where each tupple includes a 
+        street type and the number of occurences in the dataset.
+    '''
     result = []
     for key, value in street_types.iteritems():
         result.append((key, len(value)))
@@ -289,28 +335,38 @@ street_types[:15]
 
 
 
-    [('Road', 574),
+    [('Road', 576),
      ('Avenue', 145),
      ('Street', 139),
      ('Drive', 87),
-     ('Lane', 80),
+     ('Lane', 79),
      ('Geylang', 42),
      ('Crescent', 42),
      ('Walk', 40),
      ('Park', 39),
      ('Close', 37),
-     ('Link', 34),
+     ('Link', 35),
      ('Terrace', 30),
      ('Ave', 29),
      ('Hill', 25),
-     ('Flyover', 23)]
+     ('Place', 23)]
 
 
 
 
 ```python
 def populate_expected(street_types, threshold):
-    '''Populates the Expected list'''
+    '''Populates the Expected list
+    
+    Args:
+        street_types (list): A sorted list of (street_type, #_of_appearances).
+        threshold (int): The number of the top elements I want to put in the "expected" list.
+        
+    Returns:
+        list: Returns a list of the x most frequent street types (x defined by "threshold)
+    
+     '''
+    
     expected = []
     for i in street_types[:threshold]:
         expected.append(i[0])
@@ -347,7 +403,16 @@ To find the street names that need correction, I used the “*get_close_matches(
 
 ```python
 def find_abbreviations(expected, data):
-    """Uses get_close_matces() to find similar text"""
+    """Uses get_close_matces() to find similar text
+    
+    Args:
+        expected (list): A list of the expected street types.
+        data (list): A list of all the different street types.
+        
+    Retturns: nothing
+        
+    """
+    
     for i in expected:
         print i, get_close_matches(i, data, 4, 0.5)
 ```
@@ -367,8 +432,8 @@ find_abbreviations(EXPECTED, list(streets.keys()))
     Walk ['Walk', 'walk', 'Wajek', 'Wakaff']
     Park ['Park', 'park', 'Parkway', 'Paras']
     Close ['Close', 'Cross', 'Circle', 'Flyover']
-    Link ['Link', 'link', 'Minyak', 'Bingka']
-    Terrace ['Terrace', 'Terrance', 'Ter', 'service']
+    Link ['Link', 'Minyak', 'Bingka', 'Limu']
+    Terrace ['Terrace', 'Terrance', 'Ter', 'Tenteram']
 
 
 Now, I can map the different variations to the one it meant to be and correct all the different abbreviations of street types.
@@ -394,7 +459,14 @@ mapping = {
 
 ```python
 def update_street_type(tree):
-    '''Corrects the dataset's street name according to the mapping'''
+    '''Corrects the dataset's street name according to the mapping
+    
+    Args:
+        tree (ElementTree): An ElementTree object for which I want to clean the street names
+    
+    Returns: nothing
+           
+    '''
     changes = {}
     for path in ["./node", "./way"]:  #"elements" do not have street names.
         for element in tree.findall(path):
@@ -428,6 +500,12 @@ def update_street_type(tree):
             print key + ' ==> ' + value[0] + " " + "(" + str(value[
                 1]) + " occurrences" + ")"
     print str(counter) + " street names were fixed"
+    update_street_type.called = True #Function attribute to track if a function has been called.
+```
+
+
+```python
+update_street_type.called = False
 ```
 
 
@@ -442,35 +520,31 @@ update_street_type(root)
     Yarwood Ave ==> Yarwood Avenue (2 occurrences)
     Eunos Ave 6 ==> Eunos Avenue 6
     Eunos Ave 5 ==> Eunos Avenue 5
-    Holland Grove Ter ==> Holland Grove Terrace
+    Bukit Batok East Ave 6 ==> Bukit Batok East Avenue 6 (2 occurrences)
     Roseburn Ave ==> Roseburn Avenue
     Read Cresent ==> Read Crescent
     Sophia Rd ==> Sophia Road
     Bedok North road ==> Bedok North Road (4 occurrences)
-    Nanson road ==> Nanson Road
     Chee Hoon Ave ==> Chee Hoon Avenue (2 occurrences)
-    secondary_link ==> secondary_Link (66 occurrences)
+    Holland Grove Ter ==> Holland Grove Terrace
     Serangoon Aenue 1 ==> Serangoon Avenue 1
     Hua Guan Ave ==> Hua Guan Avenue (3 occurrences)
     Elite Park Ave ==> Elite Park Avenue
     Malcolm Rd ==> Malcolm Road
     Eng Neo Ave ==> Eng Neo Avenue (2 occurrences)
     Bukit Timah Rd ==> Bukit Timah Road (2 occurrences)
-    primary_link ==> primary_Link (246 occurrences)
     Stockport Rd ==> Stockport Road
     Greenmead Ave ==> Greenmead Avenue
     Ross Ave ==> Ross Avenue
-    motorway_link ==> motorway_Link (442 occurrences)
-    Tai Keng Ave ==> Tai Keng Avenue
+    Nanson road ==> Nanson Road
+    Raeburn park ==> Raeburn Park
     Upper Wilkie Rd ==> Upper Wilkie Road
-    Bukit Batok East Ave 6 ==> Bukit Batok East Avenue 6 (2 occurrences)
+    Tai Thong Cresent ==> Tai Thong Crescent
     Clementi Ave 2 ==> Clementi Avenue 2 (3 occurrences)
     Clementi Ave 1 ==> Clementi Avenue 1
     First Hospital Ave ==> First Hospital Avenue
     Wareham Rd ==> Wareham Road
-    Orchard Rd ==> Orchard Road
     31 Lower Kent Ridge Rd ==> 31 Lower Kent Ridge Road
-    road ==> Road (8 occurrences)
     Towner Rd ==> Towner Road
     Greenleaf Ave ==> Greenleaf Avenue
     1013 Geylang East Ave 3 ==> 1013 Geylang East Avenue 3
@@ -478,16 +552,14 @@ update_street_type(root)
     Ubi Ave 1 ==> Ubi Avenue 1
     Daisy Ave ==> Daisy Avenue
     Bayfront Avebue ==> Bayfront Avenue
-    tertiary_link ==> tertiary_Link (31 occurrences)
     Eunos Ave 5A ==> Eunos Avenue 5A
     Commonwealth Cresent ==> Commonwealth Crescent
     Pine walk ==> Pine Walk
     Elite Terrance ==> Elite Terrace
     Sian Tuan Ave ==> Sian Tuan Avenue
-    Raeburn park ==> Raeburn Park
-    trunk_link ==> trunk_Link (122 occurrences)
+    Tai Keng Ave ==> Tai Keng Avenue
+    Orchard Rd ==> Orchard Road
     Wilmonar Ave ==> Wilmonar Avenue
-    Tai Thong Cresent ==> Tai Thong Crescent
     Parkstone Rd ==> Parkstone Road
     Kent Ridge Cresent ==> Kent Ridge Crescent (9 occurrences)
     Vanda Ave ==> Vanda Avenue
@@ -497,7 +569,7 @@ update_street_type(root)
     Hougang Ave 1 ==> Hougang Avenue 1
     Chempaka Ave ==> Chempaka Avenue
     Greendale Ave ==> Greendale Avenue
-    998 street names were fixed
+    83 street names were fixed
 
 
 ### Auditing Postcodes
@@ -508,23 +580,31 @@ I am searching the dataset for this pattern, correcting whatever can be addresse
 
 ```python
 def fix_pcodes():
-    f_postcode_re = re.compile(
-        r'^((([0-6][0-9])|(7([0-3]|[5-9]))|80)[0-9]{4})$')  #Full match
+    """Tries to find an integer between 01 and 80, excluding 74 in the postcode field and
+    if needed change the field value accordingly
+    
+    Args: No args
+    
+    Returns: Nothing
+    """
     postcode_re = re.compile(
-        r'(([0-6][0-9])|(7([0-3]|[5-9]))|80)[0-9]{4}')  #Partial match
+        r'(([0-6][0-9])|(7([0-3]|[5-9]))|80)[0-9]{4}')# all integers between 01 and 80, excluding 74 
     for element in root.findall(".//*[@k='addr:postcode']/.."):
         tag = element.find("./*[@k='addr:postcode']")
         postcode = tag.attrib['v']
-        if not f_postcode_re.match(postcode):
-            try:
-                #Trying to remedy the postcode by removing any
-                #unnecessary string before or after the postcode
+        try:
+            new_tag = postcode_re.search(postcode).group(0)
+            if new_tag != postcode:
                 tag.attrib['v'] = postcode_re.search(postcode).group(0)
                 print postcode + ' ==> ' + tag.attrib['v']
-            except (
-                    AttributeError
-            ):  # If there is not a 6 digits sequence in the value, delete the element
-                PROBLEMATICS.append((element.get('id'), 'postcode', postcode))
+        except (AttributeError):  # If you cannot extract a valid postcode, add the element to PROBLEMATICS
+            PROBLEMATICS.append((element.get('id'), 'postcode', postcode))
+    fix_pcodes.called = True #Function attribute to track if a function has been called.
+```
+
+
+```python
+fix_pcodes.called = False
 ```
 
 
@@ -626,12 +706,16 @@ WAY_NODES_FIELDS = ['id', 'node_id', 'position']
 
 
 ```python
-def shape_element(element,
-                  node_attr_fields=NODE_FIELDS,
-                  way_attr_fields=WAY_FIELDS,
-                  problem_chars=PROBLEMCHARS,
-                  default_tag_type='regular'):
-    """Clean and shape node or way XML element to Python dict"""
+def shape_element(element):
+    """Clean and shape node or way XML element to Python dict
+    
+    Arrgs:
+        element (element): An element of the XML tree
+        
+    Returns:
+        dict: if element is a node, the node's attributes and tags.
+              if element is a way, the ways attributes and tags along with the nodes that form the way.
+    """
     node_attribs = {}
     way_attribs = {}
     way_nodes = []
@@ -693,7 +777,17 @@ def shape_element(element,
 
 ```python
 def validate_element(element, validator, schema=SCHEMA):
-    """Raise ValidationError if element does not match schema"""
+    """Raise ValidationError if element does not match schema
+    
+    Args:
+        element (element): An element of the tree
+        validator (cerberus.validator): a validator
+        schema (dict): The schema to validate element against.
+        
+    Returns:
+        Nothing
+        
+        """
     if validator.validate(element, schema) is not True:
         field, errors = next(validator.errors.iteritems())
         message_string = "\nElement of type '{0}' has the following errors:\n{1}"
@@ -720,8 +814,15 @@ class UnicodeDictWriter(csv.DictWriter, object):
 
 
 ```python
-def process_map(file_in, validate):
-    """Iteratively process each XML element and write to csv(s)"""
+def process_map(validate=True):
+    """Iteratively process each XML element and write to csv(s)
+    
+    Arrgs:
+        validate (bool): Validate the data before write them to csv or not
+        
+    Returns:
+        Nothing
+    """
 
     with codecs.open(NODES_PATH, 'w') as nodes_file, \
          codecs.open(NODE_TAGS_PATH, 'w') as nodes_tags_file, \
@@ -742,6 +843,13 @@ def process_map(file_in, validate):
         way_tags_writer.writeheader()
 
         validator = cerberus.Validator()
+        
+        #Check that the dataset has been cleared
+        if update_street_type.called is not True:
+            update_street_type(root)
+            
+        if fix_pcodes.called is not True:
+            fix_pcodes()            
 
         for element in root.findall("./*"):
             el = shape_element(element)
@@ -763,7 +871,7 @@ def process_map(file_in, validate):
 
 
 ```python
-process_map(SG_OSM, validate=True)
+process_map()
 ```
 
 ### Connection to the database
@@ -779,7 +887,7 @@ For connection between Jupyter Notebook and PostgreSQL, I am using [ipython-sql]
 %config SqlMagic.feedback=False
 
 """Connecting to the database"""
-%sql postgresql://jupyter_user:notebook@192.168.100.2/Project_3
+%sql postgresql://jupyter_user:notebook@localhost/Project_3
 ```
 
 
@@ -909,8 +1017,8 @@ pprint.pprint(PROBLEMATICS)
 
     [('453243296', 'street name', '2'),
      ('46649997', 'street name', u'\u516c\u53f865'),
-     ('453253763', 'street name', '2'),
      ('453227146', 'street name', u'\u516c\u53f865'),
+     ('453253763', 'street name', '2'),
      ('169844052', 'street name', '310074'),
      ('1318498347', 'postcode', '135'),
      ('3026819436', 'postcode', '2424'),
@@ -928,16 +1036,30 @@ I am querying the database for the above elements.
 ```python
 def element_type(element_id):
     """From the element's id, returns the element's type.
-    (I need to know the element's type, to run the appropriate query.)"""
-    path = str('./*[@id="' + str(element_id) + '"]')
-
+    (I need to know the element's type, to run the appropriate query.)
+    
+    Args:
+        element_id (str): The 'id' of the element
+        
+    Returns:
+        (str): The tag of the element.
+    """
+    path = str('./*[@id="' + element_id + '"]')
+    
     return root.find(path).tag
 ```
 
 
 ```python
 def get_element_tags(element_id):
-    """Returns all the tags for a specific element"""
+    """Returns all the tags for a specific element
+    
+    Args:
+        element_id (str):  The 'id' of the element
+        
+    Returns (sql.run.ResultSet): The result of the query
+    
+    """
     if element_type(element_id) == 'node':
         tag = %sql SELECT 'Node' AS el_type, * FROM nodes_tags WHERE nodes_tags.id = $element_id
     elif element_type(element_id) == 'way':
@@ -997,16 +1119,37 @@ get_element_tags(PROBLEMATICS[2][0])
     </tr>
     <tr>
         <td>Way</td>
-        <td>453253763</td>
-        <td>street</td>
-        <td>2</td>
+        <td>453227146</td>
+        <td>housenumber</td>
+        <td>65</td>
         <td>addr</td>
     </tr>
     <tr>
         <td>Way</td>
-        <td>453253763</td>
+        <td>453227146</td>
+        <td>postcode</td>
+        <td>119936</td>
+        <td>addr</td>
+    </tr>
+    <tr>
+        <td>Way</td>
+        <td>453227146</td>
+        <td>street</td>
+        <td>公司65</td>
+        <td>addr</td>
+    </tr>
+    <tr>
+        <td>Way</td>
+        <td>453227146</td>
         <td>building</td>
         <td>yes</td>
+        <td>regular</td>
+    </tr>
+    <tr>
+        <td>Way</td>
+        <td>453227146</td>
+        <td>name</td>
+        <td>Habourlink</td>
         <td>regular</td>
     </tr>
 </table>
@@ -1102,38 +1245,17 @@ get_element_tags(PROBLEMATICS[3][0])
     </tr>
     <tr>
         <td>Way</td>
-        <td>453227146</td>
-        <td>housenumber</td>
-        <td>65</td>
-        <td>addr</td>
-    </tr>
-    <tr>
-        <td>Way</td>
-        <td>453227146</td>
-        <td>postcode</td>
-        <td>119936</td>
-        <td>addr</td>
-    </tr>
-    <tr>
-        <td>Way</td>
-        <td>453227146</td>
-        <td>street</td>
-        <td>公司65</td>
-        <td>addr</td>
-    </tr>
-    <tr>
-        <td>Way</td>
-        <td>453227146</td>
+        <td>453253763</td>
         <td>building</td>
         <td>yes</td>
         <td>regular</td>
     </tr>
     <tr>
         <td>Way</td>
-        <td>453227146</td>
-        <td>name</td>
-        <td>Habourlink</td>
-        <td>regular</td>
+        <td>453253763</td>
+        <td>housenumber</td>
+        <td>2</td>
+        <td>addr</td>
     </tr>
 </table>
 
@@ -1268,6 +1390,16 @@ It looks like "135" is a housenumber not a postcode. To find missing parts of an
 
 ```python
 def complete_address(address):
+    """
+    Tries to find the full address from part of the address (e.g. without the postcode)
+    
+    Args:
+        address(str): Partial address
+        
+    Returns:
+        (str): Full address
+    
+    """
     while True:  #Retry the call in case of GeocoderTimedOut error
         try:
             location = geolocator.geocode(address)
@@ -2366,7 +2498,7 @@ ORDER BY "ATMs" DESC
         <td>1</td>
     </tr>
     <tr>
-        <td>Quantified Assets, Pte. Ltd.</td>
+        <td>HSBC</td>
         <td>1</td>
     </tr>
     <tr>
@@ -2378,11 +2510,11 @@ ORDER BY "ATMs" DESC
         <td>1</td>
     </tr>
     <tr>
-        <td>HSBC</td>
+        <td>Standard Chartered Bank</td>
         <td>1</td>
     </tr>
     <tr>
-        <td>Standard Chartered Bank</td>
+        <td>Quantified Assets, Pte. Ltd.</td>
         <td>1</td>
     </tr>
 </table>
@@ -2434,11 +2566,11 @@ ORDER BY "Temples" DESC;
         <td>6</td>
     </tr>
     <tr>
-        <td>sikh</td>
+        <td>jewish</td>
         <td>1</td>
     </tr>
     <tr>
-        <td>jewish</td>
+        <td>sikh</td>
         <td>1</td>
     </tr>
 </table>
@@ -2449,18 +2581,18 @@ ___
 
 ## Ideas for additional improvements.
 
-There are two areas where the current project can be improved in the future.
+There are several areas of improvement of the project in the future.
 The first one is on the completeness of the data. All the above analysis is based on a dataset that reflects a big part of Singapore but not the whole country. The reason for this is the lack of a way to download a dataset for the entire Singapore without including parts of the neighboring countries. The analyst has to either select a part of the island/country or select a wider area that includes parts of Malaysia and Indonesia. Also, because of relations between nodes, ways, and relations, the downloaded data expand much further than the actual selection. Below you can see a plotting of the coordinates of the nodes of a dataset from a tight selection of Singapore. You can notice that huge parts of nearby countries were selected.
 
-![initial selection](Resources/initial_selection.png)
+![initial selection](Resources/images/initial_selection.png)
 
 As a future improvement, I would download a wider selection or the metro extract from [MapZen](https://mapzen.com/data/metro-extracts/metro/singapore/) and filter the non-Singaporean nodes and their references. The initial filtering could take place by introducing some latitude/longitude limits in the code to sort out most of the "non-SG" nodes.
 
-![filter to square](Resources/filter_to_square.png)
+![filter to square](Resources/images/filter_to_square.png)
 
 Then, I would download a shapefile for Singapore (e.g. http://www.diva-gis.org/gdata), use a GIS library like [Fiona](https://pypi.python.org/pypi/Fiona) to create a polygon and finally with a geometric library like [Shapely](https://github.com/Toblerity/Shapely) and compare all the nodes' coordinate against this polygon. Finally, I would clean all the ways and relations from the "non-sg" nodes and remove these that become childless to conclude with a dataset of all (and only) Singapore.
 
-![After GIS](Resources/after_gis.png)
+![After GIS](Resources/images/after_gis.png)
 
 The drawback of the above technic is that the comparison of each node against the polygon is a very time-consuming procedure with my initial tests taking 17-18 hours to produce a result. This is the reason the above approach left as a future improvement probably along with the use of multithreading technics to speed up the process.
 
@@ -2473,6 +2605,8 @@ The second area with room for future improvement is the exploratory analysis of 
 * Which area has the biggest parks and recreation spaces.  
 
 The scope of the current project was the wrangling of the dataset, so all the above have been left for future improvement.
+
+Finally, open data are here to make average people's life better. For the non-data analyst, it would be nice if there was an application (mobile or web) that could evaluate the suitability of a potential rental house. The work addresses of all family members, importance weights on several amenities like supermarkets, convenience stores, cafes,  public transportation, etc. and the application would calculate the suitability of each potential rental. The user would be able to sort them by score and compare them.
 
 ___
 
