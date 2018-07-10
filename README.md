@@ -1,5 +1,5 @@
 
-**Note: This is a brief report of the Project. Please find the main Project [here](Wrangle-OpenStreetMap-Data.md).**
+**Note: This is a brief report of the Project. There are also available the [Complete Analysis](Wrangle-OpenStreetMap-Data.md) and the related [Notebook](https://github.com/YannisPap/Wrangle-OpenStreetMap-Data/blob/master/Notebook/Wrangle-OpenStreetMap-Data.ipynb).**
 
 ---
 
@@ -11,13 +11,13 @@
 
 ## Introduction
 
-On the particular project, I am using data mungling techniques to assess the quality of OpenStreetMap's (OSM) data for the center of Singapore regarding their consistency and uniformity.
+On the particular project, we are using data mungling techniques to assess the quality of OpenStreetMap's (OSM) data for the center of Singapore regarding their consistency and uniformity.
 The data wrangling takes place programmatically, using **Python** for the most of the process and **SQL** for items that need further attention while in the **PostgreSQL**.
 
 ## The Dataset
 
 The dataset describes the center of Singapore, covering an area from Clementi on the west, to Bedok on the east and from Serangoon on the north, to Sentosa Island on the south.
-The size of the dataset is 96 MB and can can be downloaded from [here](http://overpass-api.de/api/map?bbox=103.7651,1.2369,103.9310,1.3539).
+The size of the dataset is 96 MB and can be downloaded from [here](http://overpass-api.de/api/map?bbox=103.7651,1.2369,103.9310,1.3539).
 
 # Data Assessment
 
@@ -25,10 +25,10 @@ An initial exploration of the dataset revealed the following problems:
 - Abbreviations of street types like ‘Av’ instead of ‘Avenue’ and ‘Rd’ instead of ‘Road'.
 - All lowercase letters like ‘street’ instead of ‘Street’.
 - Postcodes including the first letter (S xxxxxx) or the whole name (Singapore xxxxxx) of the country.
-- Postcodes omitting the leading ‘0’ probably because of declared as integers at some point before their import to OpenStreetMap.
+- Postcodes missing the leading ‘0’ probably because of declared as integers at some point before their import to OpenStreetMap.
 - Multi-abbreviated amenity names.  
 
-The problems in the amenity names were to a small extent, and they were corrected directly in the database, the rest resolved programmatically using Python on the biggest part and a subtle portion of them needed further assessment, resolven in the database.
+The problems in the amenity names were to a small extent, and they were corrected directly in the database, the rest resolved programmatically using Python on the most considerable part, and a subtle portion of them needed further assessment, resolved in the database.
 
 ## Auditing Street Types
 
@@ -74,9 +74,9 @@ changeset="43462870" uid="2818856" user="CitymapperHQ">
   </way>
 ```
 
-Although most of the Singaporean street names end with the street type (e.g., "Serangoon Road" or "Arab Street") it is also common to end with a number instead (e.g. "Bedok North Avenue 1"). Thus, by using regular expressions, I extracted the last word that does not contain numbers from the street name.
+Although most of the Singaporean street names end with the street type (e.g., "Serangoon Road" or "Arab Street") it is also common to end with a number instead (e.g., "Bedok North Avenue 1"). Thus, by using regular expressions, I extracted the last word that does not contain numbers from the street name.
 
-It would be easy to populate the list of Common Street Types with some profound values like Street or Avenue, but guessing does not take into account any local peculiarity. Instead, I searched the dataset for all the different types and used the 12 with the most occurrences (From 13th position, abbreviations start to appear).
+It would be easy to populate the list of Common Street Types with some profound values like Street or Avenue, but guessing does not take into account any local peculiarity. Instead, we searched the dataset for all the different types and used the 12 with the most occurrences (From 13th position, abbreviations start to appear).
 
 |   |Street Type|Occurrences|    |Street Type|Occurrences|    |Street Type|Occurrences|
 |---|-----------|-----------|----|-----------|-----------|----|-----------|-----------|
@@ -105,33 +105,31 @@ Terrace ['Terrace', 'Terrance', 'Ter', 'service']
 
 The Python code was able to correct 998 problems both in addresses where the Street Type was at the end of the address  
 `Greenwood Ave ==> Greenwood Avenue (2 occurrences)`  
-and wher it was not:  
+and where it was not:  
 `Eunos Ave 7A ==> Eunos Avenue 7A`
 
 ## Auditing Postcodes
 
 Postcodes in Singapore consist of 6 digits with the first two, denoting the Postal Sector and taking values between 01 and 80, excluding 74 ([link](https://www.ura.gov.sg/realEstateIIWeb/resources/misc/list_of_postal_districts.htm)).  
-I searched the dataset for this pattern, correcting whatever could be addressed automatically and added the rest to the "PROBLEMATICS" for further examination.  
+We searched the dataset for this pattern, correcting whatever could be addressed automatically and added the rest to the "PROBLEMATICS" for further examination.  
 Postcodes were much more consistent than the street types with 3 problems fixed programmatically and 8 pending further inspection.
 
 ___
 
 # Assessment in the Database
 
-After performing the most of the cleaning with Python, I stored the dataset in a database to explore it and examine further the PROBLEMATIC elements.
+After performing the most of the cleaning with Python, we stored the dataset in a database to explore it and examine further the PROBLEMATIC elements.  
 
-As a database I used PostgreSQL to present a generic solution although a lightweight database like SQLite might be a more appropriate choice for the size of the dataset.
+As a database, I used PostgreSQL to present a generic solution although a lightweight database like SQLite might be a more appropriate choice for the size of the dataset.
 
-## Addresses
-
-And for the rest of them I had to search in Google/Google Maps for finding addresses from amenity names.
+## Addresses  
 
 The small number of the elements that were requiring further attention (13) allow me to examine them one by one. There were three categories of problems.  
-In the first category belong elements that some values have been placed to wrong attributes (e.g. housenumber in the place of postcode. These problems resolved just by checking the attributes and update the relevant tables with the righ keys/values relation.  
-Incomplete addresses with no self-explained errors belong to the second category. For these elements I defined a function that uses Google Maps API to resolve the full address from a partial address. This was helpful for the addresses with missing postcodes.  
+In the first category belong elements that some values have been placed to wrong attributes (e.g., house number in the place of postcode. These problems resolved just by checking the attributes and update the relevant tables with the right keys/values relation.  
+Incomplete addresses with no self-explained errors belong to the second category. For these elements, we defined a function that uses Google Maps API to resolve the full address from a partial address. This was helpful for the addresses with missing postcodes.  
 Finally, whatever could not be resolved with one of the above ways I used web search with any information available.
 
-You may find the changes that took place during this phase in the following table.
+The changes that took place during this phase are listed in the following table.
 
 | Element id | Problematic Attribute | Original Value | Corrected Value              |
 | ---------- | --------------------- | -------------- | ---------------------------- |
@@ -157,11 +155,11 @@ You may find the changes that took place during this phase in the following tabl
 
 ## Amenities
 
-In Singapore they refer to the banks with their abbreviations rather than their complete names. This fact along with their popularity of the ATMs on the street amenities list (will be presented later) makes them prone to mistakes. The assessment revealed only 5 issues:
-- ‘UOB’ referred as ‘Uob’  
-- ‘POSB’ referred as ‘Posb’  
-- ‘OCBC’ referred as 'Overseas Chinese Banking Corporation'  
-- 2 completely irrelevant nodes marked as ‘ATM’  
+In Singapore, they refer to the banks with their abbreviations rather than their complete names. This fact along with their popularity of the ATMs on the street amenities list (will be presented later) makes them prone to mistakes. The assessment revealed only five issues:
+- ‘UOB’ appeared as ‘Uob’.  
+- ‘POSB’ appeared as ‘Posb’.  
+- ‘OCBC’ appeared as 'Overseas Chinese Banking Corporation'.  
+- 2 completely irrelevant nodes marked as ‘ATM’.  
 
 ___
 
@@ -223,7 +221,7 @@ print "Number of 'ways: " + str(n_ways[0][0])
 
 **Most frequent amenities**
 
-No surprises here, Singaporeans love food! Restaurant are the first amenity with nearly 3 times more occurrences from the second amenity.
+No surprises here, Singaporeans love food! Restaurants are the first amenity with nearly three times more occurrences from the next amenity.
 
 
 ```python
@@ -416,25 +414,34 @@ ___
 
 # Ideas for additional improvements.
 
-There are two areas where the current project can be improved in the future.
-The first one is on the completeness of the data. All the above analysis is based on a dataset that reflects a big part of Singapore but not the whole country. The reason for this is the lack of a way to download a dataset big enough to include the entire Singapore without including parts of the neighboring countries.  
-As a future improvement, I would download the metro extract from [MapZen](https://mapzen.com/data/metro-extracts/metro/singapore/) and filter the non-Singaporean nodes and their references. The filtering would involve the creation of polygons from a suitable shapefile like [this one](http://www.diva-gis.org/gdata) with a GIS library like [Fiona](https://pypi.python.org/pypi/Fiona) and the comparison of *Nodes*’ coordinates with these polygons with a geometric library like [Shapely](https://github.com/Toblerity/Shapely).  
+There are two areas where the current project can be improved in the future.  
+The first one is on the completeness of the data. All the above analysis is based on a dataset that reflects a big part of Singapore but not the whole country. The reason for this is the lack of a way to download a dataset for entire Singapore without including parts of the neighboring countries. The analyst has to either select a part of the island/country or select a broader area that includes parts of Malaysia and Indonesia. Also, because of relations between nodes, ways, and relations, the downloaded data expand much further than the actual selection. Below you can see a plotting of the coordinates of the nodes of a dataset from a **tight** selection of Singapore. You can notice that vast parts of nearby countries were downloaded because of these relations.  
+
+![initial_selection](https://raw.githubusercontent.com/YannisPap/Wrangle-OpenStreetMap-Data/master/Resources/images/initial_selection.png)
+
+A way to remedy this issue could be downloading a metro extract from [MapZen](https://mapzen.com/data/metro-extracts/metro/singapore/) and filter the non-Singaporean nodes and their references. The initial filtering could take place by introducing some latitude/longitude limits in the code to sort out most of the "non-SG" nodes.  
+
+![filter_to_square](https://raw.githubusercontent.com/YannisPap/Wrangle-OpenStreetMap-Data/master/Resources/images/filter_to_square.png)  
+
+Then, we could we could use a shapefile for Singapore like [this one](http://www.diva-gis.org/gdata), use a GIS library like [Fiona](https://pypi.python.org/pypi/Fiona)  to create a polygon of the island and finally and finally compare the *Nodes*’ coordinates with these polygons with a geometric library like [Shapely](https://github.com/Toblerity/Shapely).  
+
+![after_gis](https://raw.githubusercontent.com/YannisPap/Wrangle-OpenStreetMap-Data/master/Resources/images/after_gis.png)  
+
+
 The drawback of the above technique is that the comparison of each node against the polygons is a very time-consuming procedure with my initial tests taking 17-18 hours to produce a result.
 
-The second area with room for future improvement is the exploratory analysis. Although the scope of the current project was the wrangling of the dataset, thus the exploration has been kept in a basic level, the dataset is full of information that can be extracted. Just to mention some:  
+The second area with room for future improvement is the exploratory analysis. Although the scope of the current project was the wrangling of the dataset, thus the exploration has been kept at a fundamental level, the dataset is full of information that can be extracted. To mention some:  
 - Distribution of commits per contributor.
 - Plotting of element creation date, per type, per day.
-- Popular franchises in the country (fast food, conventional stores, etc.)  
+- Popular franchises in the country like fast food and convenience stores.  
   
-And even more interesting such us:  
+Moreover, even more interesting, such as:  
   
 - Distribution of distance between different types of amenities.
-- Selection of a bank based on the average distance you have to walk for an ATM.
-- Which area has the biggest parks and recreation spaces.
+- Ranking of banks based on the ATM coverage of the island.
+- Which neighborhood has the largest parks and recreation spaces.  
 
-## References
-
-
+## References  
 
 Udacity - https://www.udacity.com/  
 Wikipedia - https://www.wikipedia.org/  
@@ -443,3 +450,4 @@ Overpass API - http://overpass-api.de/
 Python Software Foundation - https://www.python.org/  
 Urban Redevelopment Authority of Singapore - https://www.ura.gov.sg  
 Catherine Devlin's Github repository - https://github.com/catherinedevlin/ipython-sql  
+Google Map APIs - https://developers.google.com/maps/
